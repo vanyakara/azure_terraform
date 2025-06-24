@@ -20,4 +20,5 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
+            az login --identity
             az account show
