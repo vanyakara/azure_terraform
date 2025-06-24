@@ -1,0 +1,39 @@
+name: Terraform Destroy Azure Resources
+
+on:
+  workflow_dispatch:  # Ръчно стартиране от GitHub UI
+
+jobs:
+  destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 🔐 Вход в Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 📦 Инсталиране на Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      # 🧱 Инициализация
+      - name: Terraform Init
+        run: terraform init
+
+      # ❌ Унищожаване на ресурсите
+      - name: Terraform Destroy
+        run: |
+          terraform destroy -auto-approve \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+            -var="admin_password=${{ secrets.AZURE_ADMIN_PASSWORD }}"
