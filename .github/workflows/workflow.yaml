@@ -1,33 +1,35 @@
-name: Deploy Azure VM
+name: Terraform Deployment
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
 
 jobs:
-  build-and-deploy:
+  terraform:
+    name: 'Terraform Apply'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.8.0
 
-      - name: Create Resource Group
-        run: |
-          az group create --name myResourceGroup --location eastus
+    - name: Terraform Init
+      run: terraform init
 
-      - name: Create Virtual Machine
-        run: |
-          az vm create \
-            --resource-group myResourceGroup \
-            --name myVM \
-            --image Ubuntu2204 \
-            --admin-username azureuser \
-            --generate-ssh-keys \
-            --size Standard_B1s 
+    - name: Terraform Plan
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
