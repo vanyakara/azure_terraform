@@ -30,5 +30,4 @@ jobs:
             --image Ubuntu2204 \
             --admin-username azureuser \
             --generate-ssh-keys \
-            --size Standard_D2a_v4 \
-            --location westus2
+            --size Standard_B1s 
