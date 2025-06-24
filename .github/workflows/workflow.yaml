@@ -29,4 +29,6 @@ jobs:
             --name myVM \
             --image Ubuntu2204 \
             --admin-username azureuser \
-            --generate-ssh-keys
+            --generate-ssh-keys \
+            --size Standart_B2pts_v2 \
+            --location westus2
