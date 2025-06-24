@@ -27,7 +27,12 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve -var="admin_password=${{ secrets.AZURE_ADMIN_PASSWORD }}"
+      run: terraform apply -auto-approve \
+        -var="admin_password=${{ secrets.AZURE_ADMIN_PASSWORD }}" \
+        -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
+        -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
+        -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+        -var="admin_password=${{ secrets.ADMIN_PASSWORD }}"
       env:
         ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
