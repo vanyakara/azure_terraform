@@ -26,8 +26,18 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
+resource "azurerm_public_ip" "public_ip" {
+  for_each            = var.vms
+  name                = "${each.value.name}-pip"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Dynamic"
+  sku                 = "Basic"
+}
+
 resource "azurerm_network_interface" "nic" {
-  name                = "myNIC"
+  for_each            = var.vms
+  name                = "${each.value.name}-nic"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -35,17 +45,19 @@ resource "azurerm_network_interface" "nic" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.public_ip[each.key].id
   }
 }
 
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "myVM"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  size                = "Standard_B1s"
-  network_interface_ids = [azurerm_network_interface.nic.id]
-  admin_username = "azureuser"
-  admin_password = var.admin_password
+  for_each              = var.vms
+  name                  = each.value.name
+  resource_group_name   = azurerm_resource_group.rg.name
+  location              = azurerm_resource_group.rg.location
+  size                  = "Standard_B1s"
+  network_interface_ids = [azurerm_network_interface.nic[each.key].id]
+  admin_username        = "azureuser"
+  admin_password        = var.admin_password
   disable_password_authentication = false
 
   os_disk {
